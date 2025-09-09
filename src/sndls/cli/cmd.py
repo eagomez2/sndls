@@ -88,7 +88,8 @@ def _matches_filter(
 def _preload_file(
         file: str,
         has_header: bool = False,
-        truncate_ragged_lines: bool = False
+        truncate_ragged_lines: bool = False,
+        ignore_errors: bool = False
 ) -> pl.DataFrame:
     """Preloads a file in memory to be used with --filter/--select option.
     
@@ -120,7 +121,8 @@ def _preload_file(
             file,
             separator=separator,
             has_header=has_header,
-            truncate_ragged_lines=truncate_ragged_lines
+            truncate_ragged_lines=truncate_ragged_lines,
+            ignore_errors=ignore_errors
         )
         
     except pl.exceptions.ComputeError as e:
@@ -178,7 +180,7 @@ def _audio_file_meta_repr_from_dict(data: dict, max_fname_chars: int) -> str:
     data_fmt = "-" if data["fmt"] is None else data["fmt"]
     data_subtype = "-" if data["subtype"] is None else data["subtype"]
 
-    fmt_repr = data_fmt.ljust(4) + " " + data_subtype.ljust(14)
+    fmt_repr = data_fmt.ljust(6) + " " + data_subtype.ljust(14)
 
     # Assemble representation
     repr = f"{filename_repr} {mem_repr} {fmt_repr} {len_repr}"
@@ -239,7 +241,7 @@ def _audio_file_repr_from_dict(
     data_fmt = "-" if data["fmt"] is None else data["fmt"]
     data_subtype = "-" if data["subtype"] is None else data["subtype"]
 
-    fmt_repr = data_fmt.ljust(4) + " " + data_subtype.ljust(14)
+    fmt_repr = data_fmt.ljust(6) + " " + data_subtype.ljust(14)
 
     # Audio stats repr
     if data["is_invalid"]:
@@ -699,7 +701,8 @@ def sndls(args: Namespace) -> None:
         preload = _preload_file(
             file=args.preload,
             has_header=args.preload_has_header,
-            truncate_ragged_lines=args.preload_truncate_ragged_lines
+            truncate_ragged_lines=args.preload_truncate_ragged_lines,
+            ignore_errors=args.csv_ignore_errors
         )
     
     else:
@@ -711,7 +714,7 @@ def sndls(args: Namespace) -> None:
     
     elif is_file_with_ext(file=args.input, ext=".csv"):
         # Read file and check if the col column exists
-        df = pl.read_csv(args.input)
+        df = pl.read_csv(args.input, ignore_errors=args.csv_ignore_errors)
 
         if args.csv_input_file_col not in df.columns:
             exit_error(
@@ -958,7 +961,8 @@ def sndls(args: Namespace) -> None:
                         thresh_db=args.silent_thresh,
                         frame_size=silent_frame_size_samples,
                         hop_size=args.silent_hop_size,
-                        axis=-1
+                        axis=-1,
+                        mode=args.silent_frame_mode
                     )
                     audio_meta["peak_db"] = audio_peak_db
                     audio_meta["rms_db"] = audio_rms_db
@@ -1071,7 +1075,8 @@ def sndls(args: Namespace) -> None:
                         thresh_db=args.silent_thresh,
                         frame_size=silent_frame_size_samples,
                         hop_size=args.silent_hop_size,
-                        axis=-1
+                        axis=-1,
+                        mode=args.silent_frame_mode
                     )
                     audio_meta["peak_db"] = audio_peak_db
                     audio_meta["rms_db"] = audio_rms_db

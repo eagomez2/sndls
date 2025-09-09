@@ -6,8 +6,6 @@ from typing import (
 from scipy.signal import stft
 from numpy.lib.stride_tricks import sliding_window_view
 from .config import get_default_eps
-from .collections import flatten_nested_list
-from .exceptions import ShapeError
 
 
 def ms_to_samples(
@@ -173,7 +171,8 @@ def is_silent(
         thresh_db: float = -80.0,
         frame_size: Optional[int] = None,
         hop_size: float = 0.5,
-        axis: int = -1
+        axis: int = -1,
+        mode: Optional[str] = "any"
 ) -> bool:
     """Returns `True` if a `np.ndarray` containing audio data is silent. That
     is, the root mean square level of the files in decibels is below a certain
@@ -187,6 +186,15 @@ def is_silent(
             computed per frame.
         axis (int): Axis along which the root mean square level in decibels is
             computed and contrasted again the given threshold in decibels.
+        mode (str): Method to flag the input as silent. One of:
+            - `any`: True if *any* frame is below the threshold.
+            - `all`: True if *all* frames are below the threshold.
+            - `mean`: True if the *mean* RMS across frames is below the
+                threshold.
+            - `median`: True if the *median* RMS across frames is below the
+                threshold.
+            - `max`: True if the *maximum* RMS across frames is below the
+                threshold.
     
     Returns:
         bool: `True` if `x` is silent, `False` otherwise.
@@ -200,12 +208,29 @@ def is_silent(
             ),
             hop_size=int(frame_size * hop_size)
         )
-        db_rms = flatten_nested_list(rms_db(x_frames, axis=axis).tolist())
-        return any(block_db_rms < thresh_db for block_db_rms in db_rms)
+        db_rms = np.asarray(rms_db(x_frames, axis=axis))
+
+        if mode == "any":
+            return bool(np.any(db_rms < thresh_db))
+        
+        elif mode == "all":
+            return bool(np.all(db_rms < thresh_db))
+        
+        elif mode == "mean":
+            return bool(np.mean(db_rms) < thresh_db)
+        
+        elif mode == "median":
+            return bool(np.median(db_rms) < thresh_db)
+        
+        elif mode == "max":
+            return bool(np.max(db_rms) < thresh_db)
+        
+        else:
+            raise ValueError(f"Invalid mode {mode=}")
 
     else:
-        db_rms = flatten_nested_list(rms_db(x, axis=axis).tolist())
-        return all(chl_db_rms < thresh_db for chl_db_rms in db_rms)
+        db_rms = rms_db(x, axis=axis)
+        return bool(np.all(db_rms < thresh_db))
 
 
 def spectral_rolloff(

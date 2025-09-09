@@ -105,6 +105,15 @@ def get_parser() -> argparse.Namespace:
         )
     )
     parser.add_argument(
+        "--silent-frame-mode",
+        choices=["all", "any", "mean", "median", "max"],
+        default="any",
+        help=(
+            "method to flag silence from frame root mean square (RMS) level: "
+            "'any', 'all', 'mean', 'median', or 'max'"
+        )
+    )
+    parser.add_argument(
         "--silent-hop-size",
         type=float,
         default=0.5,
@@ -187,6 +196,11 @@ def get_parser() -> argparse.Namespace:
         type=str,
         default="file",
         help="name of the column containing files if the input is a .csv file"
+    )
+    parser.add_argument(
+        "--csv-ignore-errors",
+        action="store_true",
+        help="skip rows with errors when reading .csv files"
     )
     parser.add_argument(
         "--max-duration",
