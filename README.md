@@ -286,7 +286,9 @@ In some cases, we want not just to see files matching a certain criteria, but al
 - `mv` will move the files to `--post-action-output`.  
 - `rm` will delete the files (this action cannot be undone).  
 - `cp+sp` will first copy the files to `--post-action-output` and then create `--post-action-num-splits` splits of the data.  
-- `mv+sp` will first move the files to `--post-action-output` and then create `--post-action-num-splits` splits of the data.  
+- `mv+sp` will first move the files to `--post-action-output` and then create `--post-action-num-splits` splits of the data.
+- `dump` will create a file with all the file paths. This can be useful for using `rsync` with `--files-from` option.
+- `dump+sp` will create `--post-action-num-splits` files, each one containing a subset of all the file paths.
 
 In all cases, you will be asked to confirm the action through the command line. Here is an example:
 
