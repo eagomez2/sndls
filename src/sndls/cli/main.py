@@ -177,8 +177,8 @@ def get_parser() -> argparse.Namespace:
     parser.add_argument(
         "--post-action-num-splits",
         type=int,
-        help="number of partitions (required for --post-action {cp+sp,mv+sp}, "
-             "optional for --post-action {dump})"
+        help="number of partitions (required for --post-action {cp+sp,mv+sp,"
+             "dump+sp})"
     )
     parser.add_argument(
         "--post-action-split-dirname",
