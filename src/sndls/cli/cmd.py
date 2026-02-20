@@ -822,12 +822,12 @@ def sndls(args: Namespace) -> None:
 
     # Check splits are provided
     if (
-        args.post_action in ("mv+sp", "cp+sp")
+        args.post_action in ("mv+sp", "cp+sp", "dump+sp")
         and args.post_action_num_splits is None
     ):
         exit_error(
             "--post-action-num-splits must be defined if --post-action is "
-            "mv+sp or cp+sp"
+            "mv+sp, cp+sp or dump+sp"
         )
     
     # Sample files if --sample is enabled
@@ -1242,10 +1242,6 @@ def sndls(args: Namespace) -> None:
                 )
                 print(file_repr, writer=tqdm)
 
-            # Collect files for --post-action if any 
-            if args.post_action:
-                post_action_files.append(file)
-        
         else:
             # Format current file representation
             if not args.summary:
@@ -1254,6 +1250,10 @@ def sndls(args: Namespace) -> None:
                     args.max_fname_chars
                 )
                 print(file_repr, writer=tqdm)
+            
+        # Collect files for --post-action if any 
+        if args.post_action:
+            post_action_files.append(file)
         
         # Write data to csv
         if args.csv:
